@@ -17,13 +17,11 @@ public class HarpoonGun : MonoBehaviour
 
     void Update()
     {
-        // 1. Счетчик силы работает, только когда гарпун в пушке
         if (currentHarpoon == null)
         {
             UpdatePowerMeter();
         }
 
-        // 2. Выстрел на ЛКМ
         if (Mouse.current.leftButton.wasPressedThisFrame && currentHarpoon == null)
         {
             Shoot();
@@ -46,7 +44,6 @@ public class HarpoonGun : MonoBehaviour
 
     void Shoot()
     {
-        // Создаем гарпун и запускаем его
         currentHarpoon = Instantiate(harpoonPrefab, shootPoint.position, shootPoint.rotation);
         HarpoonProjectile projectile = currentHarpoon.GetComponent<HarpoonProjectile>();
 
@@ -58,24 +55,36 @@ public class HarpoonGun : MonoBehaviour
 
     void OnGUI()
     {
-        GUIStyle labelStyle = new GUIStyle();
-        labelStyle.fontSize = 40;
-        labelStyle.alignment = TextAnchor.MiddleCenter;
-        labelStyle.normal.textColor = Color.white;
-
-        float centerX = Screen.width / 2;
-        float centerY = Screen.height / 2;
-
         if (currentHarpoon == null)
         {
-            string powerText = Mathf.Round(power).ToString();
-            GUI.Label(new Rect(centerX - 50, centerY + 50, 100, 50), powerText, labelStyle);
+            float centerX = Screen.width / 2;
+            float centerY = Screen.height / 2;
+            float verticalOffset = 200f;
 
-            GUI.backgroundColor = Color.black;
-            GUI.Box(new Rect(centerX - 100, centerY + 100, 200, 20), "");
+            // 1. Создаем стиль для закругленной рамки
+            GUIStyle frameStyle = new GUIStyle(GUI.skin.box);
+            frameStyle.normal.background = Texture2D.whiteTexture; // Используем белую текстуру
 
-            GUI.color = Color.Lerp(Color.yellow, Color.red, (power - 1) / 9);
-            GUI.Box(new Rect(centerX - 100, centerY + 100, power * 20, 20), "");
+            // 2. Рисуем белую рамку (просто пустой прямоугольник)
+            GUI.color = Color.white;
+            // Рисуем 4 линии или одну рамку через Box (внешние границы)
+            GUI.Box(new Rect(centerX - 102, centerY + verticalOffset - 2, 204, 24), "");
+
+            // 3. Рисуем прозрачный фон внутри рамки (опционально, сейчас он пустой)
+            GUI.color = new Color(0, 0, 0, 0); // Полностью прозрачный
+            GUI.Box(new Rect(centerX - 100, centerY + verticalOffset, 200, 20), "");
+
+            // 4. Настраиваем цвета для полоски
+            Color cyanBlue = new Color(0f, 0.7f, 1f, 0.7f); // 70% прозрачности (0.7f в конце)
+            Color deepBlue = new Color(0f, 0.2f, 0.8f, 0.7f); // 70% прозрачности
+
+            GUI.color = Color.Lerp(cyanBlue, deepBlue, (power - 1) / 9f);
+
+            // 5. Рисуем закругленную полоску силы
+            // Чтобы углы были закругленными, используем стандартный GUI.skin.box
+            GUI.Box(new Rect(centerX - 100, centerY + verticalOffset, power * 20, 20), "");
+
+            // Сброс цвета
             GUI.color = Color.white;
         }
     }
