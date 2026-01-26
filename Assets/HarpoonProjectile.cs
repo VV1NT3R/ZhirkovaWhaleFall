@@ -1,32 +1,39 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(LineRenderer), typeof(AudioSource))]
 public class HarpoonProjectile : MonoBehaviour
 {
-    [Header("��������� ���")]
+    [Header("Настройки боя")]
     public float maxDistance = 15f;
     public float fightDuration = 10f;
     public float fishPullForce = 5f;
     public float waterSurfaceY = 8.3f;
 
-    [Header("��������� ������ ����")]
+    [Header("Физика (Баллистика по Эйлеру)")]
+    public float mass = 1f;               // кг
+    public float projectileRadius = 0.05f; // м
+    public float dragCoefficient = 0.47f; // Коэффициент сопротивления (сфера)
+    public float airDensity = 1.225f;    // Плотность воздуха (кг/м^3)
+    private float area;                  // π r^2
+    private Vector3 wind = Vector3.zero;  // Можно добавить ветер для сложности
+
+    [Header("Коррекция модели рыбы")]
     public Vector3 fishRotationOffset = new Vector3(0, 180f, 0);
 
-    [Header("��������� �������")]
+    [Header("Настройки веревки")]
     public LineRenderer lineRenderer;
     public float ropeWidth = 0.05f;
 
-    [Header("����� �������")]
+    [Header("Звуки Гарпуна")]
     public AudioClip hitFishSound;
     public AudioClip escapeSound;
-    public AudioClip returnSound;     // �����/�������� ��������
+    public AudioClip returnSound;
     public AudioClip fightLoopSound;
 
     private AudioSource audioSource;
     private AudioSource fightLoopSource;
-    private float speed;
     private Vector3 velocity;
-    private float gravity = 9.81f;
     private Transform origin;
     private bool isReturning = false;
     private bool hasHit = false;
@@ -37,9 +44,13 @@ public class HarpoonProjectile : MonoBehaviour
 
     public void Launch(float launchForce, Transform returnPoint)
     {
-        speed = launchForce;
         origin = returnPoint;
-        velocity = transform.forward * speed;
+        // Начальная скорость по направлению выстрела
+        velocity = transform.forward * launchForce;
+
+        // Расчет площади сечения снаряда для формулы сопротивления
+        area = Mathf.PI * projectileRadius * projectileRadius;
+
         randomOffset = Random.Range(0f, 100f);
         audioSource = GetComponent<AudioSource>();
 
@@ -79,7 +90,7 @@ public class HarpoonProjectile : MonoBehaviour
         if (!hasHit) SimulatePhysics();
         else if (caughtFish != null && !isFishExhausted) DoFishFight();
 
-        // ������������� ���� � �������
+        // Синхронизация рыбы и гарпуна
         if (caughtFish != null && !isReturning)
         {
             Vector3 targetPos = transform.position;
@@ -89,7 +100,6 @@ public class HarpoonProjectile : MonoBehaviour
             caughtFish.rotation = transform.rotation * Quaternion.Euler(fishRotationOffset);
         }
 
-        // ������ ������� ��� ��� ��������
         if (Mouse.current.rightButton.isPressed)
         {
             if (caughtFish == null || isFishExhausted)
@@ -99,41 +109,60 @@ public class HarpoonProjectile : MonoBehaviour
         }
     }
 
-    // ������� � ��������� ����� ��� �������� �����
     void StartReturning()
     {
-        if (isReturning) return; // ����� �� ����������� ������ ����
-
+        if (isReturning) return;
         isReturning = true;
         hasHit = false;
 
-        // ���� �������� (� ����� ��� ���)
         if (audioSource != null && returnSound != null)
-        {
             audioSource.PlayOneShot(returnSound);
-        }
 
         if (fightLoopSource != null) fightLoopSource.Stop();
     }
 
+    // НОВАЯ ФИЗИКА (Баллистика с сопротивлением воздуха)
     void SimulatePhysics()
     {
-        velocity.y -= gravity * Time.deltaTime;
+        // 1. Расчет силы сопротивления воздуха: Fd = -0.5 * rho * Cd * A * |v| * v
+        float currentSpeed = velocity.magnitude;
+        Vector3 dragForce = Vector3.zero;
+
+        if (currentSpeed > 0.01f)
+        {
+            dragForce = -0.5f * airDensity * dragCoefficient * area * currentSpeed * velocity;
+        }
+
+        // 2. Расчет ускорения: a = g + Fd/m
+        Vector3 acceleration = Physics.gravity + (dragForce / mass);
+
+        // 3. Интеграция Эйлера: обновляем скорость и позицию
+        velocity += acceleration * Time.deltaTime;
         transform.position += velocity * Time.deltaTime;
 
+        // Поворот гарпуна по направлению полета
+        if (velocity != Vector3.zero)
+            transform.forward = velocity.normalized;
+
+        // Остановка на поверхности воды
         if (transform.position.y < waterSurfaceY)
         {
             transform.position = new Vector3(transform.position.x, waterSurfaceY, transform.position.z);
             velocity.y = 0;
+            // Можно добавить небольшое замедление при ударе о воду, если нужно
         }
 
-        if (velocity != Vector3.zero) transform.forward = velocity.normalized;
-
+        // Регистрация попадания через Raycast
         RaycastHit hit;
         if (Physics.Raycast(transform.position, velocity.normalized, out hit, 0.7f))
         {
-            if (hit.collider.CompareTag("fish")) HitFish(hit.transform);
-            else { hasHit = true; velocity = Vector3.zero; }
+            if (hit.collider.CompareTag("fish"))
+                HitFish(hit.transform);
+            else
+            {
+                hasHit = true;
+                velocity = Vector3.zero;
+            }
         }
     }
 
@@ -202,10 +231,7 @@ public class HarpoonProjectile : MonoBehaviour
             caughtFish = null;
         }
 
-        // ���� �����
         if (audioSource != null && escapeSound != null) audioSource.PlayOneShot(escapeSound);
-
-        // ����� ��������� ������� � ��� ����
         StartReturning();
     }
 

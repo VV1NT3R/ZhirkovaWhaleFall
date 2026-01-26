@@ -5,13 +5,14 @@ public class PortManager : MonoBehaviour
 {
     [Header("Настройки порта")]
     public int buildCost = 20; // Цена одного объекта
-    public GameObject[] portObjects; // Положи сюда 3 объекта в инспекторе
+    public GameObject[] portObjects; // Объекты для активации
+    public float speedBonus = 5f;   // На сколько увеличивать скорость
 
     private int currentObjectIndex = 0;
 
     void Start()
     {
-        // В начале игры скрываем все объекты
+        // Скрываем все объекты при старте
         foreach (GameObject obj in portObjects)
         {
             if (obj != null) obj.SetActive(false);
@@ -20,30 +21,41 @@ public class PortManager : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Проверяем, что в триггер вошла лодка (у нее должен быть тег "Player" или другой твой тег)
+        // Проверяем, что вошел игрок
         if (other.CompareTag("Player"))
         {
-            TryUpgradePort();
+            // Пытаемся получить контроллер лодки
+            // Ищем сначала в объекте, потом в его родителях (на случай сложной иерархии)
+            ArcadeBoatController boat = other.GetComponentInParent<ArcadeBoatController>();
+
+            if (boat != null)
+            {
+                TryUpgradePort(boat);
+            }
         }
     }
 
-    void TryUpgradePort()
+    void TryUpgradePort(ArcadeBoatController boat)
     {
         // Если еще есть что открывать
         if (currentObjectIndex < portObjects.Length)
         {
-            // Пытаемся списать деньги через MoneyManager
+            // Проверка денег
             if (MoneyManager.Instance != null && MoneyManager.Instance.TrySpendMoney(buildCost))
             {
-                // Показываем текущий объект по очереди
+                // 1. Активируем постройку
                 portObjects[currentObjectIndex].SetActive(true);
                 currentObjectIndex++;
 
-                Debug.Log("Порт улучшен! Открыт объект номер: " + currentObjectIndex);
+                // 2. УВЕЛИЧИВАЕМ СКОРОСТЬ ЛОДКИ
+                boat.speed += speedBonus;
+                boat.turnSpeed += 25f;
+
+                Debug.Log($"Порт улучшен! Новая скорость лодки: {boat.speed}");
             }
             else
             {
-                Debug.Log("Недостаточно монет для улучшения порта!");
+                Debug.Log("Недостаточно монет!");
             }
         }
         else
