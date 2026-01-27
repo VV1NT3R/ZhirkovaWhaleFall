@@ -7,6 +7,17 @@ public class MainMenu : MonoBehaviour
     public AudioClip buttonClickSound;
     public float soundDelay = 0.3f;
 
+    [Header("UI")]
+    public GameObject mainButtonsPanel; // панель с кнопками Start/About/Exit
+    public GameObject aboutPanel;       // панель About
+
+    void Start()
+    {
+        // При запуске меню
+        mainButtonsPanel.SetActive(true);
+        aboutPanel.SetActive(false);
+    }
+
     public void StartGame()
     {
         PlayButtonSound();
@@ -17,6 +28,20 @@ public class MainMenu : MonoBehaviour
     {
         PlayButtonSound();
         Invoke("QuitApplication", soundDelay);
+    }
+
+    public void OpenAbout()
+    {
+        PlayButtonSound();
+        mainButtonsPanel.SetActive(false);
+        aboutPanel.SetActive(true);
+    }
+
+    public void CloseAbout()
+    {
+        PlayButtonSound();
+        aboutPanel.SetActive(false);
+        mainButtonsPanel.SetActive(true);
     }
 
     private void PlayButtonSound()
@@ -37,7 +62,7 @@ public class MainMenu : MonoBehaviour
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
-            Application.Quit();
+        Application.Quit();
 #endif
     }
 }
