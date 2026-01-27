@@ -59,32 +59,34 @@ public class HarpoonGun : MonoBehaviour
         {
             float centerX = Screen.width / 2;
             float centerY = Screen.height / 2;
-            float verticalOffset = 200f;
+            float verticalOffset = 250f;
 
-            // 1. Создаем стиль для закругленной рамки
-            GUIStyle frameStyle = new GUIStyle(GUI.skin.box);
-            frameStyle.normal.background = Texture2D.whiteTexture; // Используем белую текстуру
-
-            // 2. Рисуем белую рамку (просто пустой прямоугольник)
+            // 1. Рисуем белую рамку (скроется под фоном)
             GUI.color = Color.white;
-            // Рисуем 4 линии или одну рамку через Box (внешние границы)
             GUI.Box(new Rect(centerX - 102, centerY + verticalOffset - 2, 204, 24), "");
 
-            // 3. Рисуем прозрачный фон внутри рамки (опционально, сейчас он пустой)
-            GUI.color = new Color(0, 0, 0, 0); // Полностью прозрачный
+            // 2. Рисуем цветную рамку поверх
+            GUI.color = new Color(0f, 0.5f, 0.7f, 0.9f);
+            GUI.Box(new Rect(centerX - 102, centerY + verticalOffset - 2, 204, 24), "");
+
+            // 3. Фон индикатора
+            GUI.color = new Color(0.1f, 0.3f, 0.6f, 0.8f);
             GUI.Box(new Rect(centerX - 100, centerY + verticalOffset, 200, 20), "");
 
-            // 4. Настраиваем цвета для полоски
-            Color cyanBlue = new Color(0f, 0.7f, 1f, 0.7f); // 70% прозрачности (0.7f в конце)
-            Color deepBlue = new Color(0f, 0.2f, 0.8f, 0.7f); // 70% прозрачности
+            // 4. Полоска силы
+            Color startColor = new Color(0f, 0.8f, 1f, 0.9f);
+            Color endColor = new Color(0f, 0.4f, 0.8f, 0.9f);
+            GUI.color = Color.Lerp(startColor, endColor, (power - 1) / 9f);
 
-            GUI.color = Color.Lerp(cyanBlue, deepBlue, (power - 1) / 9f);
+            // Используем стиль без фона для полоски
+            GUIStyle fillStyle = new GUIStyle();
+            Texture2D fillTex = new Texture2D(1, 1);
+            fillTex.SetPixel(0, 0, GUI.color);
+            fillTex.Apply();
+            fillStyle.normal.background = fillTex;
 
-            // 5. Рисуем закругленную полоску силы
-            // Чтобы углы были закругленными, используем стандартный GUI.skin.box
-            GUI.Box(new Rect(centerX - 100, centerY + verticalOffset, power * 20, 20), "");
+            GUI.Box(new Rect(centerX - 100, centerY + verticalOffset, power * 20, 20), "", fillStyle);
 
-            // Сброс цвета
             GUI.color = Color.white;
         }
     }
