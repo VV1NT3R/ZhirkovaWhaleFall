@@ -107,6 +107,9 @@ public class HarpoonProjectile : MonoBehaviour
                 StartReturning();
             }
         }
+
+        if (PauseManager.Instance != null && PauseManager.Instance.IsPaused)
+            return;
     }
 
     void StartReturning()

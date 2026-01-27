@@ -17,6 +17,9 @@ public class HarpoonGun : MonoBehaviour
 
     void Update()
     {
+        if (PauseManager.Instance != null && PauseManager.Instance.IsPaused)
+            return;
+
         if (currentHarpoon == null)
         {
             UpdatePowerMeter();
