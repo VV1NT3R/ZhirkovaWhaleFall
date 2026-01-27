@@ -1,28 +1,74 @@
-using UnityEngine;
+﻿using UnityEngine;
+using TMPro;
 
 public class MoneyManager : MonoBehaviour
 {
     public static MoneyManager Instance;
     public int currentMoney = 0;
 
-    [Header("������ UI")]
-    public Font customFont; // ���� �������� ���� ����� � ����������
-    public Color uiColor = new Color(0f, 0.7f, 1f); // ������� ����
+    [Header("UI Reference")]
+    public TMP_Text moneyText;
 
-    [Header("�����")]
+    [Header("Настройки")]
+    public string prefix = "На счету: ";
+    public bool showSymbol = true;
+
+    [Header("Настройки текста")]
+    public bool enableWordWrapping = false; // Отключаем перенос
+    public TextOverflowModes overflowMode = TextOverflowModes.Overflow;
+
+    [Header("Звуки")]
     public AudioClip collectSound;
     public AudioClip spendSound;
     private AudioSource audioSource;
 
     void Awake()
     {
-        if (Instance == null) Instance = this;
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         audioSource = GetComponent<AudioSource>();
+        SetupTextMeshPro();
+        UpdateMoneyUI();
+    }
+
+    void SetupTextMeshPro()
+    {
+        if (moneyText != null)
+        {
+            // Отключаем перенос текста
+            moneyText.enableWordWrapping = enableWordWrapping;
+
+            // Настраиваем режим переполнения
+            moneyText.overflowMode = overflowMode;
+
+            // Устанавливаем выравнивание
+            moneyText.alignment = TextAlignmentOptions.Right; // Или Left, Center
+
+            // Минимальная ширина для текста
+            if (moneyText.rectTransform != null)
+            {
+                // Автоматически подбираем ширину
+                moneyText.rectTransform.SetSizeWithCurrentAnchors(
+                    RectTransform.Axis.Horizontal,
+                    Mathf.Max(300f, moneyText.preferredWidth + 50f)
+                );
+            }
+        }
     }
 
     public void AddMoney(int amount)
     {
         currentMoney += amount;
+        UpdateMoneyUI();
+
         if (audioSource != null && collectSound != null)
             audioSource.PlayOneShot(collectSound);
     }
@@ -32,6 +78,8 @@ public class MoneyManager : MonoBehaviour
         if (currentMoney >= amount)
         {
             currentMoney -= amount;
+            UpdateMoneyUI();
+
             if (audioSource != null && spendSound != null)
                 audioSource.PlayOneShot(spendSound);
             return true;
@@ -39,34 +87,44 @@ public class MoneyManager : MonoBehaviour
         return false;
     }
 
-    void OnGUI()
+    void UpdateMoneyUI()
     {
-        GUIStyle moneyStyle = new GUIStyle();
+        if (moneyText != null)
+        {
+            string symbol = showSymbol ? "₽" : "";
+            string text = $"{prefix}{currentMoney}{symbol}";
 
-        // ��������� ������
-        if (customFont != null) moneyStyle.font = customFont;
+            // Применяем текст
+            moneyText.text = text;
 
-        moneyStyle.fontSize = 40;
-        moneyStyle.alignment = TextAnchor.UpperRight;
+            // Автоматически подстраиваем ширину под текст
+            AdjustWidthToText(text);
+        }
+    }
 
-        float x = Screen.width - 350;
-        float y = 20;
-        float width = 230;
-        float height = 60;
-        string text = "$ " + currentMoney;
+    void AdjustWidthToText(string text)
+    {
+        if (moneyText == null || moneyText.rectTransform == null) return;
 
-        // 1. ������ ������� (����� ������ ����)
-        moneyStyle.normal.textColor = Color.white; // ���� �������
-        int outLineSize = 2; // ������� �������
+        // Вычисляем необходимую ширину
+        moneyText.ForceMeshUpdate(); // Обновляем меш, чтобы получить актуальные размеры
+        float preferredWidth = moneyText.preferredWidth;
 
-        // ������ ����� �� ��������� �� ��� �������
-        GUI.Label(new Rect(x - outLineSize, y, width, height), text, moneyStyle);
-        GUI.Label(new Rect(x + outLineSize, y, width, height), text, moneyStyle);
-        GUI.Label(new Rect(x, y - outLineSize, width, height), text, moneyStyle);
-        GUI.Label(new Rect(x, y + outLineSize, width, height), text, moneyStyle);
+        // Устанавливаем ширину с небольшим запасом
+        moneyText.rectTransform.SetSizeWithCurrentAnchors(
+            RectTransform.Axis.Horizontal,
+            preferredWidth + 30f
+        );
+    }
 
-        // 2. ������ �������� �����
-        moneyStyle.normal.textColor = uiColor; // ���� ������� ����
-        GUI.Label(new Rect(x, y, width, height), text, moneyStyle);
+    // Контекстное меню для тестов
+    [ContextMenu("Тест длинного текста")]
+    void TestLongText()
+    {
+        if (moneyText != null)
+        {
+            moneyText.text = "На счету: 999999999999₽";
+            AdjustWidthToText(moneyText.text);
+        }
     }
 }
