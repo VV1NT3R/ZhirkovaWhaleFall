@@ -17,6 +17,7 @@ public class HarpoonGun : MonoBehaviour
 
     void Update()
     {
+
         if (PauseManager.Instance != null && PauseManager.Instance.IsPaused)
             return;
 
@@ -58,6 +59,9 @@ public class HarpoonGun : MonoBehaviour
 
     void OnGUI()
     {
+        if (PauseManager.Instance != null && PauseManager.Instance.IsPaused)
+            return;
+
         if (currentHarpoon == null)
         {
             float centerX = Screen.width / 2;

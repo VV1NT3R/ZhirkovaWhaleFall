@@ -37,7 +37,7 @@ public class PauseManager : MonoBehaviour
     {
         IsPaused = true;
         Time.timeScale = 0f;
-        AudioListener.pause = true;
+        AudioListener.pause = false;
 
         if (pauseUI != null)
             pauseUI.SetActive(true);
