@@ -14,7 +14,7 @@ public class MoneyManager : MonoBehaviour
     public bool showSymbol = true;
 
     [Header("Настройки текста")]
-    public bool enableWordWrapping = false; // Отключаем перенос
+    public bool enableWordWrapping = false; 
     public TextOverflowModes overflowMode = TextOverflowModes.Overflow;
 
     [Header("Звуки")]
@@ -43,19 +43,14 @@ public class MoneyManager : MonoBehaviour
     {
         if (moneyText != null)
         {
-            // Отключаем перенос текста
             moneyText.enableWordWrapping = enableWordWrapping;
 
-            // Настраиваем режим переполнения
             moneyText.overflowMode = overflowMode;
 
-            // Устанавливаем выравнивание
-            moneyText.alignment = TextAlignmentOptions.Right; // Или Left, Center
+            moneyText.alignment = TextAlignmentOptions.Right; 
 
-            // Минимальная ширина для текста
             if (moneyText.rectTransform != null)
             {
-                // Автоматически подбираем ширину
                 moneyText.rectTransform.SetSizeWithCurrentAnchors(
                     RectTransform.Axis.Horizontal,
                     Mathf.Max(300f, moneyText.preferredWidth + 50f)
@@ -94,10 +89,8 @@ public class MoneyManager : MonoBehaviour
             string symbol = showSymbol ? "₽" : "";
             string text = $"{prefix}{currentMoney}{symbol}";
 
-            // Применяем текст
             moneyText.text = text;
 
-            // Автоматически подстраиваем ширину под текст
             AdjustWidthToText(text);
         }
     }
@@ -106,25 +99,12 @@ public class MoneyManager : MonoBehaviour
     {
         if (moneyText == null || moneyText.rectTransform == null) return;
 
-        // Вычисляем необходимую ширину
-        moneyText.ForceMeshUpdate(); // Обновляем меш, чтобы получить актуальные размеры
+        moneyText.ForceMeshUpdate(); 
         float preferredWidth = moneyText.preferredWidth;
 
-        // Устанавливаем ширину с небольшим запасом
         moneyText.rectTransform.SetSizeWithCurrentAnchors(
             RectTransform.Axis.Horizontal,
             preferredWidth + 30f
         );
-    }
-
-    // Контекстное меню для тестов
-    [ContextMenu("Тест длинного текста")]
-    void TestLongText()
-    {
-        if (moneyText != null)
-        {
-            moneyText.text = "На счету: 999999999999₽";
-            AdjustWidthToText(moneyText.text);
-        }
     }
 }

@@ -10,7 +10,7 @@ public class FishAI : MonoBehaviour
     public float maxWaitTime = 3f;
 
     [Header("Коррекция модели")]
-    public float rotationYOffset = 180f; // Смещение для исправления "зада" модели
+    public float rotationYOffset = 180f;
 
     private Vector3 startPosition;
     private Vector3 targetPosition;
@@ -48,13 +48,10 @@ public class FishAI : MonoBehaviour
         Vector3 direction = (targetPosition - transform.position).normalized;
         if (direction != Vector3.zero)
         {
-            // 1. Вычисляем поворот в сторону цели
             Quaternion targetRot = Quaternion.LookRotation(direction);
 
-            // 2. Добавляем смещение в 180 градусов, чтобы развернуть модель
             targetRot *= Quaternion.Euler(0, rotationYOffset, 0);
 
-            // 3. Плавно поворачиваемся
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
         }
 

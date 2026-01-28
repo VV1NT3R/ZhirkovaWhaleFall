@@ -33,13 +33,10 @@ public class PortManager : MonoBehaviour
 
         int money = MoneyManager.Instance.currentMoney;
 
-        // Сколько зданий можем купить по деньгам
         int canBuildByMoney = money / buildCost;
 
-        // Сколько зданий осталось построить
         int remainingBuildings = portObjects.Length - currentObjectIndex;
 
-        // Итоговое количество построек
         int buildingsToBuild = Mathf.Min(canBuildByMoney, remainingBuildings);
 
         if (buildingsToBuild <= 0)
@@ -48,11 +45,10 @@ public class PortManager : MonoBehaviour
             return;
         }
 
-        // Списываем деньги ОДИН РАЗ
+        // Списываю деньги ОДИН РАЗ
         int totalCost = buildingsToBuild * buildCost;
         MoneyManager.Instance.TrySpendMoney(totalCost);
 
-        // Строим нужное количество зданий
         for (int i = 0; i < buildingsToBuild; i++)
         {
             portObjects[currentObjectIndex].SetActive(true);

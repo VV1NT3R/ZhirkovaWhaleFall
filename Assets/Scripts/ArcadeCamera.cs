@@ -15,11 +15,10 @@ public class ArcadeCamera : MonoBehaviour
     {
         if (lookAtTarget == null) return;
 
-        // 1. Рассчитываем позицию с учетом вращения цели вручную
-        // Это работает стабильнее, чем TransformPoint при физических столкновениях
+        // 1. расчет позиции с учетом вращения цели вручную
         Vector3 targetPos = lookAtTarget.position + (lookAtTarget.rotation * offset);
 
-        // 2. Плавное движение
+        // 2.плавное движение
         transform.position = Vector3.SmoothDamp(
             transform.position,
             targetPos,
@@ -27,11 +26,11 @@ public class ArcadeCamera : MonoBehaviour
             smoothTime
         );
 
-        // 3. Плавный взгляд на цель (чтобы камера не дергалась при повороте самой лодки)
+        // 3. плавный взгляд на цель (чтобы камера не дергалась при повороте самой лодки)
         Vector3 lookPosition = lookAtTarget.position + Vector3.up * 1f;
         Quaternion targetRot = Quaternion.LookRotation(lookPosition - transform.position);
 
-        // Используем Slerp для вращения, чтобы взгляд камеры не "дрожал"
+        //для вращения, чтобы взгляд камеры не дрожал
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 10f);
     }
 }

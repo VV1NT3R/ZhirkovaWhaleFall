@@ -8,12 +8,11 @@ public class MainMenu : MonoBehaviour
     public float soundDelay = 0.3f;
 
     [Header("UI")]
-    public GameObject mainButtonsPanel; // панель с кнопками Start/About/Exit
-    public GameObject aboutPanel;       // панель About
+    public GameObject mainButtonsPanel;
+    public GameObject aboutPanel;       
 
     void Start()
     {
-        // При запуске меню
         mainButtonsPanel.SetActive(true);
         aboutPanel.SetActive(false);
     }

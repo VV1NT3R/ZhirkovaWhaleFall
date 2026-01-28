@@ -20,7 +20,7 @@ public class ArcadeBoatController : MonoBehaviour
     public float hoverHeight = 0.5f;
 
     [Header("Настройки Звука")]
-    public float soundFadeSpeed = 4f; // Скорость появления/затихания
+    public float soundFadeSpeed = 4f;
     [Range(0, 1)] public float maxVolume = 1f;
 
     private Rigidbody rb;
@@ -57,16 +57,14 @@ public class ArcadeBoatController : MonoBehaviour
         var kb = Keyboard.current;
         if (kb == null) return;
 
-        // 1. Проверка момента нажатия (перезапуск звука)
         if (kb.wKey.wasPressedThisFrame)
         {
-            engineAudio.time = 0f; // Перематываем в начало
+            engineAudio.time = 0f; 
             if (!engineAudio.isPlaying) engineAudio.Play();
         }
 
         isAccelerating = kb.wKey.isPressed;
 
-        // 2. Читаем ввод
         horizontalInput = Mathf.Lerp(horizontalInput, (kb.dKey.isPressed ? 1f : 0f) - (kb.aKey.isPressed ? 1f : 0f), Time.deltaTime * 5f);
         verticalInput = Mathf.Lerp(verticalInput, (isAccelerating ? 1f : 0f) - (kb.sKey.isPressed ? 1f : 0f), Time.deltaTime * 5f);
 
@@ -77,13 +75,10 @@ public class ArcadeBoatController : MonoBehaviour
     {
         if (engineAudio == null) return;
 
-        // Целевая громкость: если W зажата — maxVolume, иначе — 0
         float targetVolume = isAccelerating ? maxVolume : 0f;
 
-        // Плавно меняем громкость (Фейд)
         engineAudio.volume = Mathf.MoveTowards(engineAudio.volume, targetVolume, Time.deltaTime * soundFadeSpeed);
 
-        // Если звук полностью затих и кнопка не нажата — можно поставить на паузу для экономии ресурсов
         if (engineAudio.volume <= 0 && !isAccelerating && engineAudio.isPlaying)
         {
             engineAudio.Stop();
@@ -92,23 +87,23 @@ public class ArcadeBoatController : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Поворот
+        // поворот
         float movementFactor = Mathf.Clamp01(rb.linearVelocity.magnitude / 2f);
         currentRotation += horizontalInput * turnSpeed * Time.fixedDeltaTime * movementFactor;
 
-        // Движение
+        // движение
         Vector3 forwardForce = transform.forward * verticalInput * speed;
         rb.AddForce(forwardForce * acceleration, ForceMode.Acceleration);
 
-        // Трение
+        // трение
         rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, Time.fixedDeltaTime * drag);
 
-        // Позиция Y
+        // позиция Y
         Vector3 nextPos = rb.position;
         nextPos.y = Mathf.Lerp(nextPos.y, waterLevel + hoverHeight, Time.fixedDeltaTime * 5f);
         rb.MovePosition(nextPos);
 
-        // Вращение и крен
+        // вращение и крен
         float targetLean = -horizontalInput * maxLeanAngle * movementFactor;
         Quaternion targetRot = Quaternion.Euler(0, currentRotation, targetLean);
         rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRot, Time.fixedDeltaTime * leanSmoothing));

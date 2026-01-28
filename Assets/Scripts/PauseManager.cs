@@ -5,7 +5,7 @@ public class PauseManager : MonoBehaviour
 {
     public static PauseManager Instance;
 
-    public GameObject pauseUI; // канвас с меню паузы (опционально)
+    public GameObject pauseUI; 
 
     public bool IsPaused { get; private set; }
     public GameObject dimBackground;

@@ -13,10 +13,10 @@ public class HarpoonProjectile : MonoBehaviour
     [Header("Физика (Баллистика по Эйлеру)")]
     public float mass = 1f;               // кг
     public float projectileRadius = 0.05f; // м
-    public float dragCoefficient = 0.47f; // Коэффициент сопротивления (сфера)
-    public float airDensity = 1.225f;    // Плотность воздуха (кг/м^3)
-    private float area;                  // π r^2
-    private Vector3 wind = Vector3.zero;  // Можно добавить ветер для сложности
+    public float dragCoefficient = 0.47f; // Коэффициент сопротивления 
+    public float airDensity = 1.225f;    // Плотность воздуха 
+    private float area;                  
+    private Vector3 wind = Vector3.zero;  
 
     [Header("Коррекция модели рыбы")]
     public Vector3 fishRotationOffset = new Vector3(0, 180f, 0);
@@ -45,10 +45,10 @@ public class HarpoonProjectile : MonoBehaviour
     public void Launch(float launchForce, Transform returnPoint)
     {
         origin = returnPoint;
-        // Начальная скорость по направлению выстрела
+        // начальная скорость 
         velocity = transform.forward * launchForce;
 
-        // Расчет площади сечения снаряда для формулы сопротивления
+        //площадь сечения снаряда для формулы сопротивления
         area = Mathf.PI * projectileRadius * projectileRadius;
 
         randomOffset = Random.Range(0f, 100f);
@@ -90,7 +90,7 @@ public class HarpoonProjectile : MonoBehaviour
         if (!hasHit) SimulatePhysics();
         else if (caughtFish != null && !isFishExhausted) DoFishFight();
 
-        // Синхронизация рыбы и гарпуна
+        // синхронизация рыбы и гарпуна
         if (caughtFish != null && !isReturning)
         {
             Vector3 targetPos = transform.position;
@@ -124,10 +124,10 @@ public class HarpoonProjectile : MonoBehaviour
         if (fightLoopSource != null) fightLoopSource.Stop();
     }
 
-    // НОВАЯ ФИЗИКА (Баллистика с сопротивлением воздуха)
+    //баллистика
     void SimulatePhysics()
     {
-        // 1. Расчет силы сопротивления воздуха: Fd = -0.5 * rho * Cd * A * |v| * v
+        // 1.расчет силы сопротивления воздуха
         float currentSpeed = velocity.magnitude;
         Vector3 dragForce = Vector3.zero;
 
@@ -136,10 +136,10 @@ public class HarpoonProjectile : MonoBehaviour
             dragForce = -0.5f * airDensity * dragCoefficient * area * currentSpeed * velocity;
         }
 
-        // 2. Расчет ускорения: a = g + Fd/m
+        // 2.расчет ускорения: a = g + Fd/m
         Vector3 acceleration = Physics.gravity + (dragForce / mass);
 
-        // 3. Интеграция Эйлера: обновляем скорость и позицию
+        // 3.интеграция Эйлера,обновление скорости и позицию
         velocity += acceleration * Time.deltaTime;
         transform.position += velocity * Time.deltaTime;
 
@@ -147,15 +147,12 @@ public class HarpoonProjectile : MonoBehaviour
         if (velocity != Vector3.zero)
             transform.forward = velocity.normalized;
 
-        // Остановка на поверхности воды
         if (transform.position.y < waterSurfaceY)
         {
             transform.position = new Vector3(transform.position.x, waterSurfaceY, transform.position.z);
             velocity.y = 0;
-            // Можно добавить небольшое замедление при ударе о воду, если нужно
         }
 
-        // Регистрация попадания через Raycast
         RaycastHit hit;
         if (Physics.Raycast(transform.position, velocity.normalized, out hit, 0.7f))
         {

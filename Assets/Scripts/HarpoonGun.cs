@@ -64,24 +64,20 @@ public class HarpoonGun : MonoBehaviour
             float centerY = Screen.height / 2;
             float verticalOffset = 250f;
 
-            // 1. Рисуем белую рамку (скроется под фоном)
             GUI.color = Color.white;
             GUI.Box(new Rect(centerX - 102, centerY + verticalOffset - 2, 204, 24), "");
 
-            // 2. Рисуем цветную рамку поверх
             GUI.color = new Color(0f, 0.5f, 0.7f, 0.9f);
             GUI.Box(new Rect(centerX - 102, centerY + verticalOffset - 2, 204, 24), "");
 
-            // 3. Фон индикатора
             GUI.color = new Color(0.1f, 0.3f, 0.6f, 0.8f);
             GUI.Box(new Rect(centerX - 100, centerY + verticalOffset, 200, 20), "");
 
-            // 4. Полоска силы
+            // полоска силы
             Color startColor = new Color(0f, 0.8f, 1f, 0.9f);
             Color endColor = new Color(0f, 0.4f, 0.8f, 0.9f);
             GUI.color = Color.Lerp(startColor, endColor, (power - 1) / 9f);
 
-            // Используем стиль без фона для полоски
             GUIStyle fillStyle = new GUIStyle();
             Texture2D fillTex = new Texture2D(1, 1);
             fillTex.SetPixel(0, 0, GUI.color);
